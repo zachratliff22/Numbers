@@ -1,0 +1,96 @@
+SolovayStrassenTest := proc (N) 
+    local i, r, a, B; 
+    description "Check if a number is probably prime with nearly 99.99% probability"; 
+    with(numtheory); 
+    
+    if type(N, even) then return N*is*composite end if; 
+    
+    r := rand(N); 
+    for i to 50 do 
+        a := r(); 
+        B := Array([`mod`(jacobi(a, N), N), `mod`(Power(a, (1/2)*N-1/2), N)]); 
+        
+        if B[1] <> B[2] then return N*is*composite end if 
+    end do; 
+    
+    return N*is*probably*prime 
+end proc; 
+
+getLargestPowerOfTwo := proc (N) 
+    local q, z; 
+    description "Get the largest power of 2 factor in an odd integer"; 
+    q := 1; 
+    z := N-1; 
+    
+    if not type(solve(2^x = z, x), integer) then 
+        q := floor(solve(2^x = z, x))-1 
+    else 
+        return log2(z) 
+    end if; 
+    
+    while 1 <= q do 
+        if type(solve(2^q*k = z, k), integer) then 
+            return q 
+        end if; 
+        q := q-1 
+    end do; 
+    
+    return 1 
+end proc; 
+
+MillerRabinTest := proc (N) 
+    local i, r, a, p, z, k, g, q, c, flag; 
+    description "Check if a number is probably prime with nearly 99.99% probability"; 
+    with(numtheory); 
+    with(MTM); 
+    
+    if type(N, even) then return N*is*composite end if; 
+    
+    k := getLargestPowerOfTwo(N-1); 
+    q := solve(2^k*g = N-1, g); 
+    r := rand(N-1); 
+    for i to 10 do 
+        a := r()+1; 
+        z := 0; 
+        
+        if `mod`(Power(a, q), N) = 1 then return N*is*probably*prime end if; 
+
+        flag := false; 
+        while 2^z <= 2*k-1 do 
+            p := 2^z*q; 
+            if `mod`(Power(a, p), N) = `mod`(-1, N) then flag := true end if; 
+            z := z+1 
+        end do; 
+
+        if `mod`(Power(a, q), N) <> 1 and not flag then 
+            #c := cat(a, " is a witness"); 
+            #print(c); 
+            return N*is*composite 
+        end if 
+    
+    end do; 
+
+    return N*is*probably*prime 
+end proc; 
+
+generateNdigitOddNumber := proc (N) 
+    local j, r, i, a; 
+    description "Generate an N digit integer"; 
+    r := rand(10); 
+    j := ""; 
+    while length(j) <> N do 
+        a := r(); 
+        j := parse(cat(j, a))
+    end do; 
+    
+    if type(j, even) then j := j+1 end if; 
+    return j 
+end proc; 
+
+findNdigitPrime := proc (N) 
+    local i; 
+    description "Attempts to find an N digit prime number."; 
+    for i to 30 do 
+        print(MillerRabinTest(generateNdigitOddNumber(N))) 
+    end do 
+end proc;
