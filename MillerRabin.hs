@@ -51,5 +51,5 @@ main = do
         else if null args
             then printUsage
         else do    
-            let num = read (args !! 0) :: Int
+            let num = read (args !! 0) :: Integer
             millerRabin num
